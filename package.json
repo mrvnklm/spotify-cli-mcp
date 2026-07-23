@@ -1,0 +1,53 @@
+{
+  "name": "spotify-cli-mcp",
+  "version": "0.1.0",
+  "description": "MCP server wrapping the Spotify desktop app's bundled local CLI",
+  "license": "MIT",
+  "author": "mrvnklm",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrvnklm/spotify-cli-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mrvnklm/spotify-cli-mcp/issues"
+  },
+  "homepage": "https://github.com/mrvnklm/spotify-cli-mcp#readme",
+  "keywords": [
+    "mcp",
+    "spotify",
+    "cli",
+    "music"
+  ],
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "spotify-cli-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:mcpb": "node scripts/build-mcpb.mjs",
+    "start": "node dist/index.js",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
+    "@types/node": "^22.20.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.0.18"
+  }
+}

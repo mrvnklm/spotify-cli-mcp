@@ -1,0 +1,102 @@
+{
+  "manifest_version": "0.3",
+  "name": "spotify-cli-mcp",
+  "display_name": "Spotify (local CLI)",
+  "version": "0.1.0",
+  "description": "Control and query the Spotify desktop app -- playback, search, playlists, library, devices -- through natural language.",
+  "long_description": "Connects Claude to Spotify via the desktop app's own bundled local CLI helper (no API keys or OAuth needed -- it uses whichever Spotify account is already logged in on this machine). Covers playback control, device management, the playback queue, Jam sessions, search and rich track/artist/album lookup (including BPM, musical key, and Camelot key for DJ-style mixing), listening history, your saved library, playlists, and playlist folders.\n\nThis is an unofficial, community-built project and is not affiliated with, endorsed by, or supported by Spotify. It can create, modify, and permanently delete real playlists, library items, and playlist folders in your Spotify account -- always review what an AI assistant is about to do before confirming, especially for anything described as destructive or irreversible below. Requires the Spotify desktop app to be installed, running, and logged in on this machine; it cannot be used with a remote/hosted MCP client since it shells out to a local binary.",
+  "author": {
+    "name": "mrvnklm",
+    "url": "https://github.com/mrvnklm"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mrvnklm/spotify-cli-mcp.git"
+  },
+  "homepage": "https://github.com/mrvnklm/spotify-cli-mcp",
+  "documentation": "https://github.com/mrvnklm/spotify-cli-mcp#readme",
+  "support": "https://github.com/mrvnklm/spotify-cli-mcp/issues",
+  "server": {
+    "type": "node",
+    "entry_point": "server/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/server/index.js"],
+      "env": {
+        "SPOTIFY_CLI_PATH": "${user_config.spotify_cli_path}"
+      }
+    }
+  },
+  "tools": [
+    { "name": "play", "description": "Play a Spotify URI, or resume playback" },
+    { "name": "pause", "description": "Pause playback" },
+    { "name": "resume", "description": "Resume playback" },
+    { "name": "skip_to_next", "description": "Skip to the next track" },
+    { "name": "skip_to_previous", "description": "Skip to the previous track" },
+    { "name": "seek", "description": "Seek to (or by) a position in the current track" },
+    { "name": "set_shuffle", "description": "Turn shuffle on or off" },
+    { "name": "set_repeat", "description": "Set repeat mode (off, context, or track)" },
+    { "name": "set_playback_speed", "description": "Set playback speed (0.0-2.0)" },
+    { "name": "set_volume", "description": "Set playback volume (0.0-1.0)" },
+    { "name": "get_now_playing", "description": "Show the currently playing track" },
+    { "name": "list_devices", "description": "List connected playback devices" },
+    { "name": "get_device_info", "description": "Show detailed info for a specific device" },
+    { "name": "transfer_playback", "description": "Transfer playback to a specific device" },
+    { "name": "set_device_volume", "description": "Set volume on a specific device" },
+    { "name": "get_queue", "description": "View the playback queue" },
+    { "name": "add_to_queue", "description": "Add a track to the end of the playback queue" },
+    { "name": "remove_from_queue", "description": "Remove a track from the playback queue by position" },
+    { "name": "move_in_queue", "description": "Reorder a track within the playback queue" },
+    { "name": "get_jam_status", "description": "Show the current Jam session status" },
+    { "name": "list_jam_members", "description": "List members of the current Jam session" },
+    { "name": "create_jam", "description": "Start a new Jam session" },
+    { "name": "leave_jam", "description": "Leave the current Jam session" },
+    { "name": "end_jam", "description": "End the current Jam session (host only)" },
+    { "name": "kick_from_jam", "description": "Remove a member from the Jam session (host only)" },
+    { "name": "set_jam_permissions", "description": "View or change Jam session permissions" },
+    { "name": "search", "description": "Search the Spotify catalog for tracks, artists, albums, and more" },
+    { "name": "lookup_metadata", "description": "Resolve one or more Spotify URIs to rich metadata, including BPM, musical key, and Camelot key" },
+    { "name": "get_taste_profile", "description": "Show your Spotify-generated music taste profile" },
+    { "name": "get_top_history", "description": "Show your most-played tracks/artists" },
+    { "name": "get_recent_history", "description": "Show your recently played tracks" },
+    { "name": "list_library", "description": "List saved items in your library" },
+    { "name": "check_library_contains", "description": "Check whether items are saved in your library" },
+    { "name": "add_to_library", "description": "Save items to your library" },
+    { "name": "remove_from_library", "description": "Permanently remove saved items from your library" },
+    { "name": "run_library_batch", "description": "Run a batch of mixed library/playlist/folder operations in one call" },
+    { "name": "get_playlist", "description": "Get a playlist's details and tracks" },
+    { "name": "create_playlist", "description": "Create a new playlist" },
+    { "name": "update_playlist", "description": "Update a playlist's name, description, cover image, or visibility" },
+    { "name": "add_tracks_to_playlist", "description": "Add tracks to a playlist" },
+    { "name": "remove_tracks_from_playlist", "description": "Permanently remove tracks from a playlist by position" },
+    { "name": "list_folders", "description": "List playlist folders" },
+    { "name": "create_folder", "description": "Create a new playlist folder" },
+    { "name": "rename_folder", "description": "Rename a playlist folder" },
+    { "name": "move_to_folder", "description": "Move playlists or folders into another folder" },
+    { "name": "remove_folder", "description": "Remove a playlist folder (nested playlists kept by default)" },
+    { "name": "get_current_user", "description": "Show the currently logged-in Spotify user" },
+    { "name": "get_connection_status", "description": "Check whether the Spotify desktop app is running and logged in" },
+    { "name": "open_spotify_app", "description": "Launch or focus the Spotify desktop app" },
+    { "name": "navigate_to_uri", "description": "Navigate the Spotify app to a specific URI" },
+    { "name": "get_cli_version", "description": "Show the Spotify CLI and helper versions" }
+  ],
+  "keywords": ["mcp", "spotify", "music", "cli", "playlist"],
+  "license": "MIT",
+  "compatibility": {
+    "claude_desktop": ">=0.10.0",
+    "platforms": ["darwin"],
+    "runtimes": {
+      "node": ">=20.0.0"
+    }
+  },
+  "user_config": {
+    "spotify_cli_path": {
+      "type": "string",
+      "title": "Spotify CLI path (optional)",
+      "description": "Only needed if Spotify.app is installed somewhere other than /Applications. Path to the 'spotify_cli' binary inside Spotify.app/Contents/MacOS/.",
+      "sensitive": false,
+      "required": false
+    }
+  },
+  "privacy_policies": []
+}

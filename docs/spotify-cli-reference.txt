@@ -1,0 +1,1122 @@
+═══════════ play ═══════════
+Play a Spotify URI or resume playback
+
+When called without a URI, resumes the current playback.
+When called with a Spotify URI, plays that specific content.
+The URI must start with 'spotify:'.
+Use --device to play on a specific device; playback is transferred
+before starting. Prefer 'devices transfer' if you only want to move
+playback without picking new content.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli play [<uri>] [flags]
+
+FLAGS
+  --device <name|id>      Play on a specific device (name or id from 'devices list').
+                      Transfers playback before starting.
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli play
+  $ spotify_cli play spotify:track:4iV5W9uYEdYUVa79Axb7Rh
+  $ spotify_cli play spotify:track:4iV5W9uYEdYUVa79Axb7Rh --device "Kitchen Speaker"
+  $ spotify_cli play --device "Kitchen Speaker"
+
+═══════════ pause ═══════════
+Pause playback
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli pause
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli pause
+
+═══════════ resume ═══════════
+Resume playback
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli resume
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli resume
+
+═══════════ next ═══════════
+Skip to next track
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli next
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli next
+
+═══════════ previous ═══════════
+Skip to previous track
+
+Aliases: prev
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli previous
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli previous
+  $ spotify_cli prev
+
+═══════════ seek ═══════════
+Seek to position in current track
+
+Seek to an absolute position in milliseconds, or use --relative
+to seek forward or backward from the current position.
+Negative values are only valid with --relative.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli seek <ms> [flags]
+
+FLAGS
+  --relative              Seek relative to current position
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli seek 90000              # jump to 1m30s
+  $ spotify_cli seek 15000 --relative   # forward 15s
+  $ spotify_cli seek -30000 --relative  # backward 30s
+
+═══════════ shuffle ═══════════
+Set shuffle mode
+
+Enable or disable shuffle mode.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli shuffle <on|off>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli shuffle on
+  $ spotify_cli shuffle off
+
+═══════════ repeat ═══════════
+Set repeat mode
+
+When called without an argument, cycles through modes.
+Modes: off (no repeat), context (repeat album/playlist), track (repeat one).
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli repeat [off|context|track]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli repeat off
+  $ spotify_cli repeat context
+  $ spotify_cli repeat track
+
+═══════════ speed ═══════════
+Set playback speed
+
+Set the playback speed. Rate must be between 0.0 and 2.0.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli speed <rate>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli speed 1.5
+  $ spotify_cli speed 0.5
+
+═══════════ volume ═══════════
+Set playback volume
+
+Set the playback volume. Level must be between 0.0 and 1.0.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli volume <level>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli volume 0.5
+  $ spotify_cli volume 0.0
+
+═══════════ devices ═══════════
+Manage connected devices
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli devices <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  List connected devices
+  transfer       Transfer playback to a device
+  volume         Set device volume
+  info           Show detailed device info
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli devices <subcommand> --help
+
+═══════════ devices transfer ═══════════
+Transfer playback to a device
+
+Transfer playback to the named device.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli devices transfer <device> [flags]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli devices transfer "Kitchen Speaker"
+
+═══════════ devices volume ═══════════
+Set device volume
+
+Set volume for a specific device. Level must be between 0.0 and 1.0.
+If device name is omitted, sets volume on the active device.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli devices volume <level> [device] [flags]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli devices volume 0.5
+  $ spotify_cli devices volume 0.8 "Kitchen Speaker"
+
+═══════════ devices info ═══════════
+Show detailed device info
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli devices info <device> [flags]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli devices info "Kitchen Speaker"
+
+═══════════ queue ═══════════
+Manage the playback queue
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli queue <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  View the playback queue
+  add            Add a track to the queue
+  remove         Remove a track from the queue
+  move           Reorder a track in the queue
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli queue <subcommand> --help
+
+═══════════ queue add ═══════════
+Add a track to the queue
+
+Add a track to the end of the playback queue.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli queue add <uri>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli queue add spotify:track:4iV5W9uYEdYUVa79Axb7Rh
+
+═══════════ queue remove ═══════════
+Remove a track from the queue
+
+Remove a track at the given 0-based position from the upcoming queue.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli queue remove <position>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli queue remove 0
+  $ spotify_cli queue remove 2
+
+═══════════ queue move ═══════════
+Reorder a track in the queue
+
+Move a track from one 0-based position to another in the queue.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli queue move <from> <to>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli queue move 3 0
+  $ spotify_cli queue move 0 2
+
+═══════════ jam ═══════════
+Manage Jam sessions
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam <subcommand> [flags]
+
+SUBCOMMANDS
+  status (default)  Show current Jam session
+  create         Start a new Jam
+  leave          Leave the current Jam
+  end            End the Jam (host only)
+  members        List Jam members
+  kick           Remove a member from the Jam
+  permissions    View or change Jam permissions
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam <subcommand> --help
+
+═══════════ jam create ═══════════
+Start a new Jam
+
+Create a new Jam session on the current device.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam create
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam create
+
+═══════════ jam leave ═══════════
+Leave the current Jam
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam leave
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam leave
+
+═══════════ jam end ═══════════
+End the Jam (host only)
+
+End the current Jam session. Only the session host can do this.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam end
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam end
+
+═══════════ jam members ═══════════
+List Jam members
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam members [flags]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam members
+  $ spotify_cli jam members --format json
+
+═══════════ jam kick ═══════════
+Remove a member from the Jam
+
+Kick a participant from the current Jam session (host only).
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam kick <username>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam kick username123
+
+═══════════ jam permissions ═══════════
+View or change Jam permissions
+
+View current permissions, or set queue-only mode and volume control.
+Without flags, shows current permission settings.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli jam permissions [flags]
+
+FLAGS
+  --queue-only <on|off>   Set queue-only mode (participants can only add to queue)
+  --volume-control <on|off>  Allow participants to control volume
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli jam permissions
+  $ spotify_cli jam permissions --queue-only on
+  $ spotify_cli jam permissions --volume-control off
+
+═══════════ sts ═══════════
+Save to Spotify (upload, shows, episodes, timeline)
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts <subcommand> [flags]
+
+SUBCOMMANDS
+  upload (default)  Upload an audio or video file
+  shows          Manage podcast shows
+  episodes       Manage podcast episodes
+  timeline       Manage episode timeline
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts <subcommand> --help
+
+═══════════ sts upload ═══════════
+Upload an audio or video file
+
+Upload an audio or video file to Save to Spotify.
+Creates a show and episode, then uploads the file in 5MB chunks.
+
+Supported formats:
+  Audio: .mp3, .m4a, .wav, .ogg, .flac
+  Video: .mp4, .mov, .webm
+
+Both --name and --description are required.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts upload <file> --name <title> --description <text>
+
+FLAGS
+  --name <title>          Episode title (required)
+  --description <text>    Episode description (maps to --summary)
+  --show-id <uri|id>      Target show URI or ID (default: last used show)
+  --new-show <title>      Create a new show with this title
+  --image-file <path>     Cover image file (.jpg/.png, max 1 MB)
+  --language <code>       Language code (default: en)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts upload song.mp3 --name "My Song"
+  $ spotify_cli sts upload song.mp3 --name "Ep 2" --show-id spotify:show:abc123
+  $ spotify_cli sts upload video.mp4 --name "My Video" --new-show "My New Show" --description "A short clip"
+
+═══════════ sts shows ═══════════
+Manage podcast shows
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts shows <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  List shows created via CLI
+  create         Create a new show
+  delete         Delete a show
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts shows <subcommand> --help
+
+═══════════ sts shows create ═══════════
+Create a new show
+
+Create a new podcast show on Save to Spotify.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts shows create --name <title>
+
+FLAGS
+  --name <title>          Show title (required)
+  --description <text>    Show description
+  --image-file <path>     Cover image (.jpg/.png, max 1 MB)
+  --language <code>       Language code (default: en)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts shows create --name "My Podcast"
+  $ spotify_cli sts shows create --name "Tech Talk" --description "Weekly tech news" --language en
+
+═══════════ sts shows delete ═══════════
+Delete a show
+
+Delete a podcast show from Save to Spotify.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts shows delete <id>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts shows delete spotify:show:abc123
+  $ spotify_cli sts shows delete abc123
+
+═══════════ sts episodes ═══════════
+Manage podcast episodes
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts episodes <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  List episodes created via CLI
+  create         Create an episode
+  status         Check episode readiness
+  delete         Delete an episode
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts episodes <subcommand> --help
+
+═══════════ sts episodes create ═══════════
+Create an episode
+
+Create a new episode and upload the audio/video file.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts episodes create --name <title> --file <path> --description <text>
+
+FLAGS
+  --name <title>          Episode title (required)
+  --file <path>           Audio/video file to upload (required)
+  --description <text>    Episode description (required)
+  --show-id <uri|id>      Target show URI or ID (default: last used show)
+  --image-file <path>     Cover image (.jpg/.png, max 1 MB)
+  --language <code>       Language code (default: en)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts episodes create --name "Ep 1" --file ep1.mp3 --description "First episode"
+  $ spotify_cli sts episodes create --name "Ep 2" --file ep2.mp3 --description "Second" --show-id spotify:show:abc123
+
+═══════════ sts episodes status ═══════════
+Check episode readiness
+
+Check whether an episode is ready for playback.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts episodes status <id>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts episodes status spotify:episode:abc123
+
+═══════════ sts episodes delete ═══════════
+Delete an episode
+
+Delete a podcast episode from Save to Spotify.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts episodes delete <id>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts episodes delete spotify:episode:abc123
+
+═══════════ sts timeline ═══════════
+Manage episode timeline
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts timeline <subcommand> [flags]
+
+SUBCOMMANDS
+  get (default)  Get timeline for an episode
+  set (default)  Set timeline on an episode
+  delete (default)  Delete all timeline items for an episode
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts timeline <subcommand> --help
+
+═══════════ sts timeline get ═══════════
+Get timeline for an episode
+
+Retrieve all timeline items (chapters + companion content) for the specified episode.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts timeline get <episode_id>
+
+FLAGS
+  --show-id <uri|id>      Show URI or ID (default: from cache)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts timeline get spotify:episode:abc123
+
+═══════════ sts timeline set ═══════════
+Set timeline on an episode
+
+Replace all timeline items on an episode with the contents of a JSON file.
+
+The JSON file must have the format:
+  {"items": [{"chapter": {"title": "...", "start_time_ms": 0}}, ...]}
+
+Each item must be one of: chapter, image, link, or spotify_entity.
+At least 2 chapters are required; first chapter must start at 0 ms; chapters >= 30s apart.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts timeline set --episode-id <id> --from-file <path>
+
+FLAGS
+  --episode-id <uri|id>   Episode URI or ID (required)
+  --from-file <path>      JSON file with timeline items array (required)
+  --show-id <uri|id>      Show URI or ID (default: from cache)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts timeline set --episode-id spotify:episode:abc123 --from-file timeline.json
+
+═══════════ sts timeline delete ═══════════
+Delete all timeline items for an episode
+
+Delete all timeline items associated with the specified episode.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli sts timeline delete <episode_id>
+
+FLAGS
+  --show-id <uri|id>      Show URI or ID (default: from cache)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli sts timeline delete spotify:episode:abc123
+
+═══════════ library ═══════════
+Manage your saved library
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  List saved items
+  contains       Check if items are in your library
+  add            Add items to your library
+  remove         Remove items from your library
+  batch          Run a batch of mixed library, playlist, and folder operations
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library <subcommand> --help
+
+═══════════ library list ═══════════
+List saved items
+
+List items in your library.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library list [flags]
+
+FLAGS
+  --type <type>           Filter by type (album, artist, playlist, folder, show, audiobook)
+  --limit <n>             Max results to return
+  --offset <n>            Pagination offset
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli library list
+  $ spotify_cli library list --type album --limit 20
+
+═══════════ library contains ═══════════
+Check if items are in your library
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library contains <uri...> [flags]
+
+FLAGS
+  --format <json>         Output format
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli library contains spotify:track:abc spotify:album:xyz
+  $ spotify_cli library contains spotify:track:abc --format json
+
+═══════════ library add ═══════════
+Add items to your library
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library add <uri...>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli library add spotify:track:abc
+
+═══════════ library remove ═══════════
+Remove items from your library
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library remove <uri...>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli library remove spotify:track:abc
+
+═══════════ library batch ═══════════
+Run a batch of mixed library, playlist, and folder operations
+
+Run a sequence of mixed library operations in a single CLI invocation,
+amortizing process-startup and connection-handshake cost that makes
+single-op calls expensive for agent workflows.
+
+Reads a JSON manifest from stdin (default) or --from-file. Each op is
+dispatched sequentially against the same connection. Results are written
+as one JSON line per op (always, regardless of --format), followed by a
+final summary line in plain text or JSON (when --format json).
+
+By default the batch continues on error; pass --stop-on-error to abort
+at the first failure (remaining ops are reported with ok=false,
+skipped=true). Exit code is non-zero if any op failed.
+
+Manifest schema:
+  {
+    "stop_on_error": false,      // optional; --stop-on-error wins
+    "ops": [
+      {"op": "library_add",     "uris": ["spotify:..."]},
+      {"op": "library_remove",  "uris": ["spotify:..."]},
+      {"op": "library_contains","uris": ["spotify:..."]},
+      {"op": "playlist_create", "name": "...",
+                                    "description": "...", "public": false,
+                                    "image_file": "/path/to/cover.jpg"},
+      {"op": "playlist_update", "playlist_uri": "spotify:...",
+                                    "name": "...", "description": "...",
+                                    "public": true,
+                                    "image_file": "/path/to/cover.jpg"},
+      {"op": "playlist_add",    "playlist_uri": "spotify:...",
+                                    "track_uris": ["spotify:..."], "position": 0},
+      {"op": "playlist_remove", "playlist_uri": "spotify:...",
+                                    "positions": [0,1,5]},
+      {"op": "folder_create",   "name": "...",
+                                    "parent_folder_uri": "spotify:..."},
+      {"op": "folder_rename",   "folder_uri": "spotify:...", "name": "..."},
+      {"op": "folder_move",     "uris": ["spotify:..."],
+                                    "destination_folder_uri": "root"},
+      {"op": "folder_remove",   "folder_uri": "spotify:...",
+                                    "keep_contents": false}
+    ]
+  }
+
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli library batch [--from-file <path>] [--stop-on-error] [--format json]
+
+FLAGS
+  --from-file <path>      Read JSON manifest from file (default: stdin)
+  --stop-on-error         Abort the batch on the first failure
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli library batch --from-file ops.json
+  $ echo '{"ops":[{"op":"library_add","uris":["spotify:track:abc"]}]}' | spotify_cli library batch
+  $ spotify_cli library batch --from-file ops.json --stop-on-error --format json
+
+═══════════ playlist ═══════════
+Manage playlists
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist <subcommand> [flags]
+
+SUBCOMMANDS
+  get            Get playlist details
+  create         Create a new playlist
+  update         Update playlist details
+  add            Add tracks to a playlist
+  remove         Remove tracks from a playlist
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist <subcommand> --help
+
+═══════════ playlist create ═══════════
+Create a new playlist
+
+Create a new playlist with the given name.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist create <name> [flags]
+
+FLAGS
+  --description <text>    Playlist description
+  --image-file <path>     Local image file to set as cover art (.jpg/.png)
+  --public                Make playlist public
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli playlist create "My Playlist"
+  $ spotify_cli playlist create "Party Mix" --description "Weekend vibes" --public
+
+═══════════ playlist update ═══════════
+Update playlist details
+
+Update a playlist's name, description, or visibility.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist update <uri> [flags]
+
+FLAGS
+  --name <text>           New playlist name
+  --description <text>    New description
+  --image-file <path>     Local image file to set as cover art (.jpg/.png)
+  --public                Make playlist public
+  --private               Make playlist private
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli playlist update spotify:playlist:xyz --name "New Name"
+  $ spotify_cli playlist update spotify:playlist:xyz --description "Updated" --private
+
+═══════════ playlist add ═══════════
+Add tracks to a playlist
+
+Add one or more tracks to a playlist.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist add <playlist_uri> <track_uri...> [flags]
+
+FLAGS
+  --position <n>          Insert position (0-based)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli playlist add spotify:playlist:p spotify:track:t1 spotify:track:t2
+  $ spotify_cli playlist add spotify:playlist:p spotify:track:t --position 0
+
+═══════════ playlist remove ═══════════
+Remove tracks from a playlist
+
+Remove tracks at specified positions from a playlist.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli playlist remove <playlist_uri> [flags]
+
+FLAGS
+  --positions <0,1,5>     Comma-separated positions to remove
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli playlist remove spotify:playlist:p --positions 0,1,5
+
+═══════════ folder ═══════════
+Manage playlist folders
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder <subcommand> [flags]
+
+SUBCOMMANDS
+  list (default)  List playlist folder hierarchy
+  create         Create a new folder
+  rename         Rename a folder
+  move           Move items to a folder
+  remove         Remove a folder
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+LEARN MORE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder <subcommand> --help
+
+═══════════ folder list ═══════════
+List playlist folder hierarchy
+
+List playlist folders and playlists. Use --recursive --format json to expose the full hierarchy with parent_uri and depth.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder list [flags]
+
+FLAGS
+  --folder <uri>          List direct contents of a specific folder
+  --recursive             Return all descendants as a depth-first hierarchy
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli folder list
+  $ spotify_cli folder list --format json
+  $ spotify_cli folder list --recursive --format json
+  $ spotify_cli folder list --folder spotify:user:name:folder:123 --format json
+
+═══════════ folder create ═══════════
+Create a new folder
+
+Create a new playlist folder.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder create <name> [flags]
+
+FLAGS
+  --in <folder_uri>       Create inside a specific folder
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli folder create "My Folder"
+  $ spotify_cli folder create "Sub Folder" --in spotify:folder:abc
+
+═══════════ folder rename ═══════════
+Rename a folder
+
+Rename an existing playlist folder.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder rename <folder_uri> <new_name>
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli folder rename spotify:folder:abc "New Name"
+
+═══════════ folder move ═══════════
+Move items to a folder
+
+Move one or more playlists or folders to a destination folder.
+Use 'root' as the destination to move items to the top level.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder move <uri...> --to <folder_uri|root>
+
+FLAGS
+  --to <folder_uri|root>  Destination folder or 'root'
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli folder move spotify:folder:abc --to spotify:folder:xyz
+  $ spotify_cli folder move spotify:playlist:p1 spotify:playlist:p2 --to root
+
+═══════════ folder remove ═══════════
+Remove a folder
+
+Remove a playlist folder. By default, contents are also removed.
+Use --keep-contents to move contents to the parent folder.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli folder remove <folder_uri> [flags]
+
+FLAGS
+  --keep-contents         Keep folder contents (move to parent)
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli folder remove spotify:folder:abc
+  $ spotify_cli folder remove spotify:folder:abc --keep-contents
+
+═══════════ me ═══════════
+Show current user info
+
+Print the current user's profile as JSON.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli me
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli me
+
+═══════════ open ═══════════
+Launch the Spotify app
+
+Launch or activate the Spotify desktop app.
+Pass a Spotify URI to open specific content.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli open [args...]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli open
+  $ spotify_cli open spotify:track:abc
+
+═══════════ navigate ═══════════
+Navigate to a Spotify URI
+
+Launch or activate the Spotify desktop app and navigate to a specific URI.
+Use --play to start playback after navigation.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli navigate <uri> [flags]
+
+FLAGS
+  --play                  Start playback after navigating to the URI.
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli navigate spotify:track:abc123
+  $ spotify_cli navigate spotify:episode:abc123 --play
+  $ spotify_cli navigate spotify:album:xyz
+
+═══════════ status ═══════════
+Check connection and login state
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli status [flags]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli status
+  $ spotify_cli status --format json
+
+═══════════ version ═══════════
+Print versions of the CLI and bundled native helpers
+
+Prints the CLI binary version and the compile-time versions of the
+bundled super-connect and save-to-spotify helpers.
+
+USAGE
+  /Applications/Spotify.app/Contents/MacOS/spotify_cli version [--format json]
+
+GLOBAL FLAGS
+  --format text|json  Output format (default: text)
+  -h, --help     Show help for command
+
+EXAMPLES
+  $ spotify_cli version
+  $ spotify_cli version --format json
+
