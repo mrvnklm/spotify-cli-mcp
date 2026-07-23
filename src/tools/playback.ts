@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
-import { formatJson } from "../utils/formatters.js";
+import { formatJson, formatMutationResult } from "../utils/formatters.js";
 import { spotifyUriSchema, volumeLevelSchema, playbackSpeedSchema } from "../utils/validators.js";
 
 export function registerPlaybackTools(server: McpServer, client: SpotifyCliClient): void {
@@ -20,7 +20,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
         if (params.device !== undefined) args.push("--device", params.device);
         const data = await client.run(args);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -42,7 +42,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["pause"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -64,7 +64,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["resume"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -86,7 +86,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["next"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -108,7 +108,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["previous"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -144,7 +144,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
         if (params.relative) args.push("--relative");
         const data = await client.run(args);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -168,7 +168,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["shuffle", params.mode]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -194,7 +194,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
         if (params.mode !== undefined) args.push(params.mode);
         const data = await client.run(args);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -218,7 +218,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["speed", String(params.rate)]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -242,7 +242,7 @@ export function registerPlaybackTools(server: McpServer, client: SpotifyCliClien
       try {
         const data = await client.run(["volume", String(params.level)]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {

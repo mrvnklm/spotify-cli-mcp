@@ -1,3 +1,12 @@
+NOTE: this file is a recursive `spotify_cli <cmd> -h` dump captured during
+development. It does NOT include `now-playing`, `search`, `lookup`, `taste`,
+or `history top`/`history recent` -- those five were captured separately
+via ad-hoc live testing in an earlier part of the same session and are not
+reflected here. Their argv construction in src/tools/content.ts and the
+now_playing tool in src/tools/playback.ts rests on that live testing, not
+on this file. If you touch those commands, re-verify against a live
+`spotify_cli <cmd> -h` rather than assuming this dump is exhaustive.
+
 ═══════════ play ═══════════
 Play a Spotify URI or resume playback
 

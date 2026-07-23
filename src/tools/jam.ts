@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
-import { formatJson } from "../utils/formatters.js";
+import { formatJson, formatMutationResult } from "../utils/formatters.js";
 
 export function registerJamTools(server: McpServer, client: SpotifyCliClient): void {
   server.tool(
@@ -57,7 +57,7 @@ export function registerJamTools(server: McpServer, client: SpotifyCliClient): v
       try {
         const data = await client.run(["jam", "create"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -79,7 +79,7 @@ export function registerJamTools(server: McpServer, client: SpotifyCliClient): v
       try {
         const data = await client.run(["jam", "leave"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -101,7 +101,7 @@ export function registerJamTools(server: McpServer, client: SpotifyCliClient): v
       try {
         const data = await client.run(["jam", "end"]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -125,7 +125,7 @@ export function registerJamTools(server: McpServer, client: SpotifyCliClient): v
       try {
         const data = await client.run(["jam", "kick", params.username]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -160,7 +160,7 @@ export function registerJamTools(server: McpServer, client: SpotifyCliClient): v
 
         const data = await client.run(args);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {

@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
 import { spotifyUriSchema } from "../utils/validators.js";
-import { formatJson } from "../utils/formatters.js";
+import { formatJson, formatMutationResult } from "../utils/formatters.js";
 
 export function registerQueueTools(server: McpServer, client: SpotifyCliClient): void {
   server.tool(
@@ -38,7 +38,7 @@ export function registerQueueTools(server: McpServer, client: SpotifyCliClient):
       try {
         const data = await client.run(["queue", "add", params.uri]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -62,7 +62,7 @@ export function registerQueueTools(server: McpServer, client: SpotifyCliClient):
       try {
         const data = await client.run(["queue", "remove", String(params.position)]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -87,7 +87,7 @@ export function registerQueueTools(server: McpServer, client: SpotifyCliClient):
       try {
         const data = await client.run(["queue", "move", String(params.from), String(params.to)]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {

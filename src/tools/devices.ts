@@ -2,7 +2,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
-import { formatJson } from "../utils/formatters.js";
+import { formatJson, formatMutationResult } from "../utils/formatters.js";
 import { volumeLevelSchema } from "../utils/validators.js";
 
 /**
@@ -71,7 +71,7 @@ export function registerDevicesTools(server: McpServer, client: SpotifyCliClient
       try {
         const data = await client.run(["devices", "transfer", params.device]);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {
@@ -100,7 +100,7 @@ export function registerDevicesTools(server: McpServer, client: SpotifyCliClient
         if (params.device !== undefined) args.push(params.device);
         const data = await client.run(args);
         return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
+          content: [{ type: "text" as const, text: formatMutationResult(data) }],
         };
       } catch (error) {
         if (error instanceof SpotifyCliError) {

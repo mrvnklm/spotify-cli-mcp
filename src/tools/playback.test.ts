@@ -147,6 +147,16 @@ describe("pause", () => {
     expect(lastCallArgs()).toEqual(["pause", "--format", "json"]);
     expect(result.isError).toBeUndefined();
   });
+
+  it("real-world shape: 'pause' prints nothing on success (confirmed live) -- reports {success:true, message:\"\"} rather than erroring", async () => {
+    mockExecFileOnce("");
+    const handler = getHandler(getHandlers(), "pause");
+
+    const result = await handler({});
+
+    expect(result.isError).toBeUndefined();
+    expect(JSON.parse(result.content[0].text)).toEqual({ success: true, message: "" });
+  });
 });
 
 describe("resume", () => {
@@ -158,6 +168,16 @@ describe("resume", () => {
 
     expect(lastCallArgs()).toEqual(["resume", "--format", "json"]);
     expect(result.isError).toBeUndefined();
+  });
+
+  it("real-world shape: 'resume' prints nothing on success (confirmed live) -- reports {success:true, message:\"\"} rather than erroring", async () => {
+    mockExecFileOnce("");
+    const handler = getHandler(getHandlers(), "resume");
+
+    const result = await handler({});
+
+    expect(result.isError).toBeUndefined();
+    expect(JSON.parse(result.content[0].text)).toEqual({ success: true, message: "" });
   });
 });
 
@@ -319,6 +339,16 @@ describe("set_volume", () => {
 
     expect(result.isError).toBe(true);
     expect(result.content[0].text).toContain("no active device");
+  });
+
+  it("real-world shape: 'volume' ignores --format json and returns raw text (confirmed live: 'Volume: 0.60') -- reports success without erroring", async () => {
+    mockExecFileOnce("Volume: 0.60");
+    const handler = getHandler(getHandlers(), "set_volume");
+
+    const result = await handler({ level: 0.6 });
+
+    expect(result.isError).toBeUndefined();
+    expect(JSON.parse(result.content[0].text)).toEqual({ success: true, message: "Volume: 0.60" });
   });
 });
 
