@@ -207,7 +207,7 @@ and are the calls worth reading carefully before you approve them.
 | `search` | Search the Spotify catalog for tracks, artists, albums, and more |
 | `lookup_metadata` | Resolve one or more Spotify URIs to rich metadata -- BPM, musical key, Camelot key, monthly listeners, followers, play counts, release date, genres |
 | `get_taste_profile` | Show your Spotify-generated music taste profile |
-| `get_top_history` | Show your most-played tracks/artists |
+| `get_top_history` | Show your most-played entities (tracks, artists, and albums mixed) |
 | `get_recent_history` | Show your recently played tracks |
 
 ### Library, Playlists, and Folders
@@ -342,6 +342,13 @@ transport-level exception.
   There is no other command in this CLI that deletes an owned playlist.
   If you create a playlist with `create_playlist` and want it gone, delete
   it from the Spotify app itself (right-click → Delete).
+- **`history top` has a broken `--type` filter.** spotify_cli advertises it
+  in its own `--help` (`history top --type artist`), but against version
+  1.2.94.583 every value fails with `Failed to get top history: HTTP request
+  failed` -- 14 out of 14 attempts, while omitting the flag succeeded 6 out
+  of 6. `get_top_history` therefore does not expose a `type` parameter at
+  all; filter the returned items yourself. (`search --type` is unaffected --
+  all seven of its values were verified working.)
 - **Two mutation commands return no output at all on success**: `pause` and
   `resume` print empty stdout even with `--format json`. This is handled the
   same way as the raw-text case above (see Design Decisions) -- the tool

@@ -226,7 +226,7 @@ describe("get_taste_profile", () => {
 });
 
 describe("get_top_history", () => {
-  it("builds argv with just ['history', 'top'] when type/limit omitted", async () => {
+  it("builds argv with just ['history', 'top'] when limit/offset omitted", async () => {
     const { client, run } = createFakeClient(() => Promise.resolve({}));
     const handler = getHandler(client, "get_top_history");
 
@@ -235,13 +235,24 @@ describe("get_top_history", () => {
     expect(run).toHaveBeenCalledWith(["history", "top"]);
   });
 
-  it("appends --type and --limit when provided", async () => {
+  it("appends --limit and --offset when provided", async () => {
     const { client, run } = createFakeClient(() => Promise.resolve({}));
     const handler = getHandler(client, "get_top_history");
 
-    await handler({ type: "artists", limit: 10 });
+    await handler({ limit: 10, offset: 20 });
 
-    expect(run).toHaveBeenCalledWith(["history", "top", "--type", "artists", "--limit", "10"]);
+    expect(run).toHaveBeenCalledWith(["history", "top", "--limit", "10", "--offset", "20"]);
+  });
+
+  it("does not expose a type parameter, since --type fails for every value", () => {
+    const { client } = createFakeClient(() => Promise.resolve({}));
+    const { server, tools } = createFakeServer();
+    registerContentTools(server, client);
+
+    // Guards against re-adding the flag without re-testing it: it fails
+    // even with the value from spotify_cli's own --help example, and its
+    // error text trips the transient-retry path.
+    expect(Object.keys(tools.get("get_top_history")?.shape ?? {})).toEqual(["limit", "offset"]);
   });
 
   it("maps a SpotifyCliError to isError text output", async () => {

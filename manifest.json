@@ -57,7 +57,7 @@
     { "name": "search", "description": "Search the Spotify catalog for tracks, artists, albums, and more" },
     { "name": "lookup_metadata", "description": "Resolve one or more Spotify URIs to rich metadata, including BPM, musical key, and Camelot key" },
     { "name": "get_taste_profile", "description": "Show your Spotify-generated music taste profile" },
-    { "name": "get_top_history", "description": "Show your most-played tracks/artists" },
+    { "name": "get_top_history", "description": "Show your most-played tracks, artists, and albums" },
     { "name": "get_recent_history", "description": "Show your recently played tracks" },
     { "name": "list_library", "description": "List saved items in your library" },
     { "name": "check_library_contains", "description": "Check whether items are saved in your library" },

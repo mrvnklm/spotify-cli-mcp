@@ -92,20 +92,24 @@ export function registerContentTools(server: McpServer, client: SpotifyCliClient
     "get_top_history",
     {
       description:
-        "Get the current Spotify user's top listening history (e.g. top artists or top tracks over a time range). Read-only.",
+        "Get the current Spotify user's most played entities (a mix of tracks, artists, and albums). Read-only. Note: spotify_cli's 'history top' advertises a --type filter, but it fails for every value including the one in its own --help example -- so this tool does not expose it. Filter the returned items client-side instead.",
       inputSchema: {
-        type: z
-          .string()
-          .optional()
-          .describe("Scope of top history to return (e.g. 'artists' or 'tracks'). The exact accepted values aren't documented by spotify_cli's own help output -- omit to use the CLI's default, or run 'history top --help' against the binary if unsure."),
         limit: z.number().int().positive().optional().describe("Maximum number of results to return"),
+        offset: z.number().int().min(0).optional().describe("Pagination offset"),
       },
       annotations: ANNOTATIONS.readOnly("Get top history"),
     },
     async (params) => {
       const args: string[] = ["history", "top"];
-      if (params.type !== undefined) args.push("--type", params.type);
+      // No --type here on purpose: against spotify_cli 1.2.94.583 every
+      // --type value fails with "Failed to get top history: HTTP request
+      // failed" (14/14 attempts, including `--type artist` straight out of
+      // the command's own --help example), while omitting it succeeds
+      // (6/6). Worse, that message matches the transient-retry pattern in
+      // cli/errors.ts, so exposing the flag would burn a retry on every
+      // call before failing. Re-test before adding it back.
       if (params.limit !== undefined) args.push("--limit", String(params.limit));
+      if (params.offset !== undefined) args.push("--offset", String(params.offset));
       return formatJson(await client.run(args));
     }
   );
