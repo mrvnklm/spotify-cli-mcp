@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ZodType } from "zod";
 import { registerDevicesTools } from "./devices.js";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
@@ -10,19 +11,44 @@ type ToolHandler = (params: Record<string, unknown>) => Promise<{
 }>;
 
 /**
- * Minimal fake McpServer that just captures each registered tool's handler
- * (the last argument passed to `server.tool(...)`) so it can be invoked
- * directly in tests without spinning up a real MCP transport.
+ * Minimal fake McpServer that captures each registered tool's handler and
+ * config (as passed to `server.registerTool(...)`), so both behavior and
+ * annotations can be checked without spinning up a real MCP transport.
  */
-function createFakeServer(): { server: McpServer; handlers: Map<string, ToolHandler> } {
+interface CapturedTool {
+  description: string;
+  shape: Record<string, ZodType>;
+  annotations: Record<string, unknown>;
+  handler: ToolHandler;
+}
+
+function createFakeServer(): {
+  server: McpServer;
+  handlers: Map<string, ToolHandler>;
+  tools: Map<string, CapturedTool>;
+} {
   const handlers = new Map<string, ToolHandler>();
+  const tools = new Map<string, CapturedTool>();
   const server = {
-    tool: (name: string, ...rest: unknown[]) => {
-      const handler = rest[rest.length - 1] as ToolHandler;
+    registerTool: (
+      name: string,
+      config: {
+        description: string;
+        inputSchema: Record<string, ZodType>;
+        annotations?: Record<string, unknown>;
+      },
+      handler: ToolHandler
+    ) => {
       handlers.set(name, handler);
+      tools.set(name, {
+        description: config.description,
+        shape: config.inputSchema,
+        annotations: config.annotations ?? {},
+        handler,
+      });
     },
   } as unknown as McpServer;
-  return { server, handlers };
+  return { server, handlers, tools };
 }
 
 function createFakeClient(response: unknown): { client: SpotifyCliClient; run: ReturnType<typeof vi.fn> } {

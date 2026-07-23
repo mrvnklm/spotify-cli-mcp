@@ -7,6 +7,20 @@
  */
 const TRANSIENT_ERROR_PATTERN = /HTTP request failed/i;
 
+/**
+ * Cap on how much CLI output is quoted back in an error. spotify_cli answers
+ * some failures by dumping its full top-level help (several KB) to stdout,
+ * and forwarding all of that into an MCP tool result wastes context without
+ * adding anything past the first few lines.
+ */
+const MAX_DETAIL_CHARS = 2000;
+
+function truncateDetail(detail: string): string {
+  return detail.length <= MAX_DETAIL_CHARS
+    ? detail
+    : `${detail.slice(0, MAX_DETAIL_CHARS)}... [truncated, ${detail.length} chars total]`;
+}
+
 export class SpotifyCliError extends Error {
   constructor(
     public readonly exitCode: number,
@@ -23,7 +37,7 @@ export class SpotifyCliError extends Error {
   private static summarize(exitCode: number, stderr: string, stdout: string): string {
     const detail = stderr.trim() || stdout.trim();
     return detail
-      ? `spotify_cli exited with code ${exitCode}: ${detail}`
+      ? `spotify_cli exited with code ${exitCode}: ${truncateDetail(detail)}`
       : `spotify_cli exited with code ${exitCode}`;
   }
 
@@ -43,9 +57,9 @@ export class SpotifyCliError extends Error {
     parts.push(`Exit code: ${this.exitCode}`);
     const stderrTrimmed = this.stderr.trim();
     if (stderrTrimmed) {
-      parts.push(`Error: ${stderrTrimmed}`);
+      parts.push(`Error: ${truncateDetail(stderrTrimmed)}`);
     } else {
-      parts.push(`Error: ${this.message}`);
+      parts.push(`Error: ${truncateDetail(this.message)}`);
     }
     return parts.join("\n");
   }

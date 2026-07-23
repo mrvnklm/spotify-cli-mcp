@@ -1,5 +1,6 @@
 # Spotify CLI MCP Server
 
+[![npm](https://img.shields.io/npm/v/spotify-cli-mcp)](https://www.npmjs.com/package/spotify-cli-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20-green)](https://nodejs.org/)
 
@@ -159,6 +160,10 @@ remotely.
 
 ## Tool Reference
 
+51 tools. Each one is annotated for the host application as read-only,
+additive, or **destructive** -- the nine destructive ones are marked below,
+and are the calls worth reading carefully before you approve them.
+
 ### Playback
 
 | Tool | Description |
@@ -185,14 +190,14 @@ remotely.
 | `set_device_volume` | Set volume on a specific device |
 | `get_queue` | View the playback queue |
 | `add_to_queue` | Add a track to the end of the playback queue |
-| `remove_from_queue` | Remove a track from the playback queue by position |
+| ⚠️ `remove_from_queue` | Remove a track from the playback queue by position |
 | `move_in_queue` | Reorder a track within the playback queue |
 | `get_jam_status` | Show the current Jam session status |
 | `list_jam_members` | List members of the current Jam session |
 | `create_jam` | Start a new Jam session |
 | `leave_jam` | Leave the current Jam session |
-| `end_jam` | End the current Jam session (host only) |
-| `kick_from_jam` | Remove a member from the Jam session (host only) |
+| ⚠️ `end_jam` | End the current Jam session (host only) |
+| ⚠️ `kick_from_jam` | Remove a member from the Jam session (host only) |
 | `set_jam_permissions` | View or change Jam session permissions |
 
 ### Content (search, lookup, taste, history)
@@ -212,18 +217,18 @@ remotely.
 | `list_library` | List saved items in your library |
 | `check_library_contains` | Check whether items are saved in your library |
 | `add_to_library` | Save items to your library |
-| `remove_from_library` | **Permanently** remove saved items from your library |
-| `run_library_batch` | Run a batch of mixed library/playlist/folder operations in one call |
+| ⚠️ `remove_from_library` | **Permanently** remove saved items from your library |
+| ⚠️ `run_library_batch` | Run a batch of mixed library/playlist/folder operations in one call |
 | `get_playlist` | Get a playlist's details and tracks |
 | `create_playlist` | Create a new playlist |
-| `update_playlist` | Update a playlist's name, description, cover image, or visibility |
+| ⚠️ `update_playlist` | Update a playlist's name, description, cover image, or visibility |
 | `add_tracks_to_playlist` | Add tracks to a playlist |
-| `remove_tracks_from_playlist` | **Permanently** remove tracks from a playlist by position |
+| ⚠️ `remove_tracks_from_playlist` | **Permanently** remove tracks from a playlist by position |
 | `list_folders` | List playlist folders |
 | `create_folder` | Create a new playlist folder |
-| `rename_folder` | Rename a playlist folder |
+| ⚠️ `rename_folder` | Rename a playlist folder |
 | `move_to_folder` | Move playlists or folders into another folder |
-| `remove_folder` | Remove a playlist folder -- nested playlists are **kept** by default (see below) |
+| ⚠️ `remove_folder` | Remove a playlist folder -- nested playlists are **kept** by default (see below) |
 
 ### System
 
@@ -239,28 +244,35 @@ remotely.
 
 ```
 src/
-  index.ts                 # Node.js stdio entry point
-  server.ts                # MCP server factory
+  index.ts                   # Node.js stdio entry point
+  server.ts                  # MCP server factory
   cli/
-    client.ts               # spotify_cli process wrapper (execFile/spawn, retry, JSON parsing)
+    client.ts                # spotify_cli process wrapper (execFile/spawn, retry, JSON parsing)
     errors.ts                # SpotifyCliError with transient-failure detection
   tools/
+    register.ts              # defineTool() -- shared error handling + annotation presets
     playback.ts              # 11 tools
-    devices.ts                 # 4 tools
-    queue.ts                    # 4 tools
-    jam.ts                        # 7 tools
-    content.ts                     # search/lookup/taste/history -- 5 tools
-    library.ts                      # library + batch -- 5 tools
-    playlists.ts                     # 5 tools
-    folders.ts                        # 5 tools
-    system.ts                          # 5 tools
+    devices.ts               #  4 tools
+    queue.ts                 #  4 tools
+    jam.ts                   #  7 tools
+    content.ts               #  5 tools -- search/lookup/taste/history
+    library.ts               #  5 tools -- library + batch
+    playlists.ts             #  5 tools
+    folders.ts               #  5 tools
+    system.ts                #  5 tools
   utils/
     config.ts                # SPOTIFY_CLI_PATH resolution
-    validators.ts              # Shared Zod schemas (spotifyUriSchema, volume/speed ranges, ...)
-    formatters.ts                # Thin JSON formatting helper
+    validators.ts            # Shared Zod schemas (spotifyUriSchema, volume/speed ranges, ...)
+    formatters.ts            # Thin JSON formatting helper
 docs/
   spotify-cli-reference.txt  # Full captured --help/-h output of every spotify_cli command
 ```
+
+51 tools in total. Every tool is registered through `defineTool()`, which
+attaches the tool's Zod input schema and MCP annotations and applies one
+shared error path: a failed `spotify_cli` call comes back as an `isError`
+result carrying the command, exit code, and CLI output, rather than as a
+transport-level exception.
 
 ### Design Decisions
 
@@ -273,6 +285,14 @@ docs/
   its description and Zod field docs. Safety relies on that description
   text being accurate, plus the host application's own per-call permission
   prompts -- not on an extra confirmation step baked into this server.
+- **Every tool carries MCP annotations** (`readOnlyHint`, `destructiveHint`,
+  `idempotentHint`, `openWorldHint`), which is what makes the point above
+  workable: a host can gate the 9 destructive tools behind a prompt while
+  letting the 18 read-only ones through, without having to parse English
+  descriptions to tell them apart. `openWorldHint` is true throughout --
+  every tool reaches Spotify's backend via the desktop app. A test asserts
+  the destructive and read-only sets exactly, so a newly added tool cannot
+  quietly register as harmless.
 - **One deliberate exception**: `remove_folder`'s `keep_contents` parameter
   defaults to `true`. The underlying CLI's own default is the opposite --
   it deletes a folder's nested playlists unless `--keep-contents` is passed

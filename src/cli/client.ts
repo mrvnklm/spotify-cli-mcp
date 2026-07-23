@@ -10,6 +10,21 @@ const DEFAULT_BATCH_TIMEOUT_MS = 60_000;
 const DEFAULT_RETRY: RetryConfig = { maxAttempts: 2, baseDelayMs: 300 };
 
 /**
+ * execFile's own default maxBuffer is 1 MiB, and exceeding it kills the child
+ * and rejects with ERR_CHILD_PROCESS_STDIO_MAXBUFFER -- i.e. a *successful*
+ * command whose output is merely large fails, and fails confusingly. That
+ * ceiling is well within reach here: 'folder list --recursive' already runs
+ * to ~80 KB on a modest account, and 'playlist get' on a multi-thousand-track
+ * playlist or 'history recent --limit <large>' (~380 bytes per item) go past
+ * 1 MiB easily. 32 MiB is far above any plausible spotify_cli response while
+ * still bounding memory if the CLI ever streams unexpectedly.
+ */
+const MAX_STDOUT_BYTES = 32 * 1024 * 1024;
+
+/** How long to wait after SIGTERM before escalating to SIGKILL on timeout. */
+const KILL_GRACE_MS = 2_000;
+
+/**
  * Shape of the error object node:child_process rejects with. execFile/spawn
  * attach `code`/`killed`/`signal`, and (for execFile via util.promisify)
  * `stdout`/`stderr` as captured so far.
@@ -65,6 +80,7 @@ export class SpotifyCliClient {
     try {
       const result = await execFileAsync(this.cliPath, fullArgs, {
         timeout: DEFAULT_RUN_TIMEOUT_MS,
+        maxBuffer: MAX_STDOUT_BYTES,
       });
       stdout = result.stdout;
       stderr = result.stderr;
@@ -104,6 +120,19 @@ export class SpotifyCliClient {
       );
     }
 
+    // Checked before the killed/signal branch below: a maxBuffer overflow
+    // also kills the child with a signal, so without this it would be
+    // misreported as a timeout and send the user chasing the wrong problem.
+    if (err.code === "ERR_CHILD_PROCESS_STDIO_MAXBUFFER") {
+      return new SpotifyCliError(
+        -1,
+        err.stderr ?? "",
+        err.stdout ?? "",
+        `spotify_cli produced more than ${MAX_STDOUT_BYTES} bytes of output (command: ${command.join(" ")}) -- narrow the request with --limit/--offset`,
+        command
+      );
+    }
+
     if (err.killed && err.signal) {
       return new SpotifyCliError(
         -1,
@@ -115,7 +144,17 @@ export class SpotifyCliClient {
     }
 
     const exitCode = typeof err.code === "number" ? err.code : -1;
-    return new SpotifyCliError(exitCode, err.stderr ?? "", err.stdout ?? "", err.message, command);
+    const stderr = err.stderr ?? "";
+    const stdout = err.stdout ?? "";
+    // execFile's own err.message is just "Command failed: <argv>" with the
+    // reason appended only when the CLI wrote to stderr. spotify_cli reports
+    // some failures on *stdout* instead (e.g. a malformed subcommand prints
+    // usage text to stdout and exits 1), and in that case err.message carries
+    // no reason at all -- the tool would surface a bare "Command failed" with
+    // the actual explanation sitting unused in stdout. Passing undefined lets
+    // SpotifyCliError.summarize() pick whichever stream actually has detail.
+    const hasDetail = stderr.trim().length > 0 || stdout.trim().length > 0;
+    return new SpotifyCliError(exitCode, stderr, stdout, hasDetail ? undefined : err.message, command);
   }
 
   private delay(ms: number): Promise<void> {
@@ -194,10 +233,21 @@ export class SpotifyCliClient {
       let settled = false;
       let timedOut = false;
 
+      let killTimer: NodeJS.Timeout | undefined;
       const timer = setTimeout(() => {
         timedOut = true;
         child.kill();
+        // 'close' only fires once the child actually exits, so a child that
+        // ignores SIGTERM would leave this promise pending forever and hang
+        // the tool call. Escalate to SIGKILL after a short grace period.
+        killTimer = setTimeout(() => child.kill("SIGKILL"), KILL_GRACE_MS);
+        killTimer.unref?.();
       }, timeoutMs);
+
+      const clearTimers = (): void => {
+        clearTimeout(timer);
+        if (killTimer) clearTimeout(killTimer);
+      };
 
       child.stdout.on("data", (chunk: Buffer) => {
         stdout += chunk.toString();
@@ -209,7 +259,7 @@ export class SpotifyCliClient {
       child.on("error", (error: ChildProcessError) => {
         if (settled) return;
         settled = true;
-        clearTimeout(timer);
+        clearTimers();
         if (error.code === "ENOENT") {
           reject(
             new SpotifyCliError(
@@ -228,7 +278,7 @@ export class SpotifyCliClient {
       child.on("close", (code) => {
         if (settled) return;
         settled = true;
-        clearTimeout(timer);
+        clearTimers();
         if (timedOut) {
           reject(
             new SpotifyCliError(
@@ -244,6 +294,16 @@ export class SpotifyCliClient {
         resolve({ stdout, stderr, exitCode: code ?? -1 });
       });
 
+      // A manifest larger than the OS pipe buffer (~64 KiB) cannot be written
+      // in one go, so if spotify_cli exits early -- a rejected manifest, the
+      // desktop app not running -- the rest of the write hits a closed pipe
+      // and stdin emits EPIPE. An unhandled 'error' event on a stream is an
+      // uncaught exception, which would take down the whole MCP server
+      // process, not just this call. Swallow it deliberately: the child's own
+      // 'close'/'error' handler above is what settles this promise, and its
+      // exit code plus stderr describe the real failure far better than the
+      // EPIPE would.
+      child.stdin.on("error", () => {});
       child.stdin.write(input);
       child.stdin.end();
     });

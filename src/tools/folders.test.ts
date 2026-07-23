@@ -48,12 +48,37 @@ type ToolHandler = (params: Record<string, unknown>) => Promise<{
  */
 function createFakeServer(): {
   server: McpServer;
-  tools: Map<string, { shape: Record<string, z.ZodTypeAny>; handler: ToolHandler }>;
+  tools: Map<
+    string,
+    {
+      shape: Record<string, z.ZodTypeAny>;
+      handler: ToolHandler;
+      annotations: Record<string, unknown>;
+    }
+  >;
 } {
-  const tools = new Map<string, { shape: Record<string, z.ZodTypeAny>; handler: ToolHandler }>();
+  const tools = new Map<
+    string,
+    {
+      shape: Record<string, z.ZodTypeAny>;
+      handler: ToolHandler;
+      annotations: Record<string, unknown>;
+    }
+  >();
   const server = {
-    tool: (name: string, _description: string, shape: Record<string, z.ZodTypeAny>, handler: ToolHandler) => {
-      tools.set(name, { shape, handler });
+    registerTool: (
+      name: string,
+      config: {
+        inputSchema: Record<string, z.ZodTypeAny>;
+        annotations?: Record<string, unknown>;
+      },
+      handler: ToolHandler
+    ) => {
+      tools.set(name, {
+        shape: config.inputSchema,
+        handler,
+        annotations: config.annotations ?? {},
+      });
     },
   } as unknown as McpServer;
   return { server, tools };

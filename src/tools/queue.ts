@@ -1,103 +1,65 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
 import type { SpotifyCliClient } from "../cli/client.js";
-import { SpotifyCliError } from "../cli/errors.js";
 import { spotifyUriSchema } from "../utils/validators.js";
 import { formatJson, formatMutationResult } from "../utils/formatters.js";
+import { ANNOTATIONS, defineTool } from "./register.js";
 
 export function registerQueueTools(server: McpServer, client: SpotifyCliClient): void {
-  server.tool(
+  defineTool(
+    server,
     "get_queue",
-    "View the current playback queue (the upcoming tracks). Read-only.",
-    {},
-    async () => {
-      try {
-        const data = await client.run(["queue"]);
-        return {
-          content: [{ type: "text" as const, text: formatJson(data) }],
-        };
-      } catch (error) {
-        if (error instanceof SpotifyCliError) {
-          return {
-            content: [{ type: "text" as const, text: error.toText() }],
-            isError: true,
-          };
-        }
-        throw error;
-      }
-    }
+    {
+      description: "View the current playback queue (the upcoming tracks). Read-only.",
+      inputSchema: {},
+      annotations: ANNOTATIONS.readOnly("Get queue"),
+    },
+    async () => formatJson(await client.run(["queue"]))
   );
 
-  server.tool(
+  defineTool(
+    server,
     "add_to_queue",
-    "Add a track to the end of the playback queue.",
     {
-      uri: spotifyUriSchema,
+      description: "Add a track to the end of the playback queue.",
+      inputSchema: {
+        uri: spotifyUriSchema,
+      },
+      // Not idempotent: calling twice queues the same track twice.
+      annotations: ANNOTATIONS.additive("Add to queue"),
     },
-    async (params) => {
-      try {
-        const data = await client.run(["queue", "add", params.uri]);
-        return {
-          content: [{ type: "text" as const, text: formatMutationResult(data) }],
-        };
-      } catch (error) {
-        if (error instanceof SpotifyCliError) {
-          return {
-            content: [{ type: "text" as const, text: error.toText() }],
-            isError: true,
-          };
-        }
-        throw error;
-      }
-    }
+    async (params) => formatMutationResult(await client.run(["queue", "add", params.uri]))
   );
 
-  server.tool(
+  defineTool(
+    server,
     "remove_from_queue",
-    "Remove a track at the given 0-based position from the upcoming queue. This permanently drops that track from the queue -- there is no built-in undo, though it can be re-added with add_to_queue.",
     {
-      position: z.number().int().min(0).describe("0-based position of the track to remove from the upcoming queue"),
+      description:
+        "Remove a track at the given 0-based position from the upcoming queue. This permanently drops that track from the queue -- there is no built-in undo, though it can be re-added with add_to_queue.",
+      inputSchema: {
+        position: z.number().int().min(0).describe("0-based position of the track to remove from the upcoming queue"),
+      },
+      annotations: ANNOTATIONS.destructive("Remove from queue"),
     },
-    async (params) => {
-      try {
-        const data = await client.run(["queue", "remove", String(params.position)]);
-        return {
-          content: [{ type: "text" as const, text: formatMutationResult(data) }],
-        };
-      } catch (error) {
-        if (error instanceof SpotifyCliError) {
-          return {
-            content: [{ type: "text" as const, text: error.toText() }],
-            isError: true,
-          };
-        }
-        throw error;
-      }
-    }
+    async (params) => formatMutationResult(await client.run(["queue", "remove", String(params.position)]))
   );
 
-  server.tool(
+  defineTool(
+    server,
     "move_in_queue",
-    "Move a track from one 0-based position to another in the queue, reordering the upcoming queue in place.",
     {
-      from: z.number().int().min(0).describe("0-based position of the track to move"),
-      to: z.number().int().min(0).describe("0-based destination position for the track"),
+      description:
+        "Move a track from one 0-based position to another in the queue, reordering the upcoming queue in place.",
+      inputSchema: {
+        from: z.number().int().min(0).describe("0-based position of the track to move"),
+        to: z.number().int().min(0).describe("0-based destination position for the track"),
+      },
+      // Reorders rather than removes, but repeating the call keeps shifting
+      // positions, so it is not idempotent.
+      annotations: ANNOTATIONS.additive("Move in queue"),
     },
-    async (params) => {
-      try {
-        const data = await client.run(["queue", "move", String(params.from), String(params.to)]);
-        return {
-          content: [{ type: "text" as const, text: formatMutationResult(data) }],
-        };
-      } catch (error) {
-        if (error instanceof SpotifyCliError) {
-          return {
-            content: [{ type: "text" as const, text: error.toText() }],
-            isError: true,
-          };
-        }
-        throw error;
-      }
-    }
+    async (params) =>
+      formatMutationResult(await client.run(["queue", "move", String(params.from), String(params.to)]))
   );
 }

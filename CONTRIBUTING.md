@@ -86,6 +86,15 @@ OIDC trusted publishing (no `NPM_TOKEN` secret needed). It then builds the
 `.mcpb` Claude Desktop extension and attaches it to a GitHub Release for the
 tag, alongside auto-generated release notes.
 
+> **One-time setup before the first release.** npm's trusted-publisher
+> settings live on a package's settings page, so they cannot be configured
+> for a name that has never been published -- the workflow above will fail
+> its publish step on the very first tag. Publish `0.1.0` once from a local
+> checkout (`npm publish --access public`, using an npm token or `npm login`),
+> then add the trusted publisher on npmjs.com under
+> **Package settings → Trusted Publisher → GitHub Actions**, pointing at this
+> repo and `publish.yml`. Every release after that runs entirely through CI.
+
 `manifest.json` (used for the `.mcpb` build) has its own `version` field --
 `npm run build:mcpb` overwrites it from `package.json` at build time, so you
 don't need to bump it by hand.

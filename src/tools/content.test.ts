@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import type { ZodType } from "zod";
 import { registerContentTools } from "./content.js";
 import type { SpotifyCliClient } from "../cli/client.js";
 import { SpotifyCliError } from "../cli/errors.js";
@@ -19,15 +20,40 @@ type ToolHandler = (params: Record<string, unknown>) => Promise<{
   isError?: boolean;
 }>;
 
-function createFakeServer(): { server: McpServer; handlers: Map<string, ToolHandler> } {
+interface CapturedTool {
+  description: string;
+  shape: Record<string, ZodType>;
+  annotations: Record<string, unknown>;
+  handler: ToolHandler;
+}
+
+function createFakeServer(): {
+  server: McpServer;
+  handlers: Map<string, ToolHandler>;
+  tools: Map<string, CapturedTool>;
+} {
   const handlers = new Map<string, ToolHandler>();
+  const tools = new Map<string, CapturedTool>();
   const server = {
-    tool: (name: string, ...rest: unknown[]) => {
-      const handler = rest[rest.length - 1] as ToolHandler;
+    registerTool: (
+      name: string,
+      config: {
+        description: string;
+        inputSchema: Record<string, ZodType>;
+        annotations?: Record<string, unknown>;
+      },
+      handler: ToolHandler
+    ) => {
       handlers.set(name, handler);
+      tools.set(name, {
+        description: config.description,
+        shape: config.inputSchema,
+        annotations: config.annotations ?? {},
+        handler,
+      });
     },
   } as unknown as McpServer;
-  return { server, handlers };
+  return { server, handlers, tools };
 }
 
 function createFakeClient(runImpl?: (...args: unknown[]) => unknown): {
@@ -92,19 +118,12 @@ describe("search", () => {
 
   it("rejects an invalid type via the registered zod schema", () => {
     const { client } = createFakeClient();
-    const { server } = createFakeServer();
-    const shapes = new Map<string, Record<string, import("zod").ZodType>>();
-    const captureServer = {
-      tool: (name: string, _desc: string, shape: Record<string, import("zod").ZodType>) => {
-        shapes.set(name, shape);
-      },
-    } as unknown as McpServer;
-    registerContentTools(captureServer, client);
-    const shape = shapes.get("search");
-    if (!shape) throw new Error("search not registered");
-    const parsed = shape.type.safeParse("not-a-real-type");
-    expect(parsed.success).toBe(false);
-    void server;
+    const { server, tools } = createFakeServer();
+    registerContentTools(server, client);
+
+    const tool = tools.get("search");
+    if (!tool) throw new Error("search not registered");
+    expect(tool.shape.type.safeParse("not-a-real-type").success).toBe(false);
   });
 });
 
@@ -161,35 +180,25 @@ describe("lookup_metadata", () => {
 
   it("rejects more than 50 uris via the registered zod schema", () => {
     const { client } = createFakeClient();
-    const shapes = new Map<string, Record<string, import("zod").ZodType>>();
-    const captureServer = {
-      tool: (name: string, _desc: string, shape: Record<string, import("zod").ZodType>) => {
-        shapes.set(name, shape);
-      },
-    } as unknown as McpServer;
-    registerContentTools(captureServer, client);
-    const shape = shapes.get("lookup_metadata");
-    if (!shape) throw new Error("lookup_metadata not registered");
+    const { server, tools } = createFakeServer();
+    registerContentTools(server, client);
+
+    const tool = tools.get("lookup_metadata");
+    if (!tool) throw new Error("lookup_metadata not registered");
 
     const tooMany = Array.from({ length: 51 }, (_, i) => `spotify:track:${i}`);
-    const parsed = shape.uris.safeParse(tooMany);
-    expect(parsed.success).toBe(false);
+    expect(tool.shape.uris.safeParse(tooMany).success).toBe(false);
   });
 
   it("rejects a non-Spotify-URI string via the registered zod schema", () => {
     const { client } = createFakeClient();
-    const shapes = new Map<string, Record<string, import("zod").ZodType>>();
-    const captureServer = {
-      tool: (name: string, _desc: string, shape: Record<string, import("zod").ZodType>) => {
-        shapes.set(name, shape);
-      },
-    } as unknown as McpServer;
-    registerContentTools(captureServer, client);
-    const shape = shapes.get("lookup_metadata");
-    if (!shape) throw new Error("lookup_metadata not registered");
+    const { server, tools } = createFakeServer();
+    registerContentTools(server, client);
 
-    const parsed = shape.uris.safeParse(["not-a-uri"]);
-    expect(parsed.success).toBe(false);
+    const tool = tools.get("lookup_metadata");
+    if (!tool) throw new Error("lookup_metadata not registered");
+
+    expect(tool.shape.uris.safeParse(["not-a-uri"]).success).toBe(false);
   });
 });
 

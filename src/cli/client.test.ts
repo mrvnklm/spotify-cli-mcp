@@ -37,16 +37,22 @@ vi.mock("node:child_process", async () => {
 const { SpotifyCliClient } = await import("./client.js");
 const { SpotifyCliError } = await import("./errors.js");
 
+/**
+ * stdin is an EventEmitter, not a plain object with write/end: the client
+ * attaches an 'error' listener to it (to keep an EPIPE from a child that
+ * exited before reading the manifest from becoming an uncaught exception
+ * that takes down the whole server), and tests emit on it to cover that.
+ */
 function createFakeChildProcess() {
   const child = new EventEmitter() as EventEmitter & {
     stdout: EventEmitter;
     stderr: EventEmitter;
-    stdin: { write: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> };
+    stdin: EventEmitter & { write: ReturnType<typeof vi.fn>; end: ReturnType<typeof vi.fn> };
     kill: ReturnType<typeof vi.fn>;
   };
   child.stdout = new EventEmitter();
   child.stderr = new EventEmitter();
-  child.stdin = { write: vi.fn(), end: vi.fn() };
+  child.stdin = Object.assign(new EventEmitter(), { write: vi.fn(), end: vi.fn() });
   child.kill = vi.fn();
   return child;
 }
@@ -150,6 +156,45 @@ describe("SpotifyCliClient.run", () => {
     expect(execFileMock).toHaveBeenCalledTimes(2);
   });
 
+  it("allows responses far larger than execFile's 1 MiB default maxBuffer", async () => {
+    execFileMock.mockImplementationOnce((_path, _args, _options, cb) => cb(null, "{}", ""));
+    const client = new SpotifyCliClient({ cliPath: "/bin/spotify_cli" });
+
+    await client.run(["playlist", "get", "spotify:playlist:x"]);
+
+    expect(execFileMock).toHaveBeenCalledWith(
+      "/bin/spotify_cli",
+      expect.any(Array),
+      expect.objectContaining({ maxBuffer: 32 * 1024 * 1024 }),
+      expect.any(Function)
+    );
+  });
+
+  it("reports a maxBuffer overflow as an output-size problem, not as a timeout", async () => {
+    const err = Object.assign(new Error("stdout maxBuffer length exceeded"), {
+      code: "ERR_CHILD_PROCESS_STDIO_MAXBUFFER",
+      killed: true,
+      signal: "SIGTERM",
+    });
+    execFileMock.mockImplementation((_path, _args, _options, cb) => cb(err, "", ""));
+    const client = new SpotifyCliClient({ cliPath: "/bin/spotify_cli" });
+
+    await expect(client.run(["history", "recent"])).rejects.toThrow(/more than \d+ bytes of output/);
+  });
+
+  it("surfaces failure detail the CLI wrote to stdout when stderr is empty", async () => {
+    // spotify_cli answers a malformed subcommand by printing usage to stdout
+    // and exiting non-zero, leaving execFile's own message a bare
+    // "Command failed: ..." with no reason in it.
+    const err = Object.assign(new Error("Command failed: /bin/spotify_cli search -x"), { code: 1 });
+    execFileMock.mockImplementation((_path, _args, _options, cb) =>
+      cb(err, 'unknown command "search -x"', "")
+    );
+    const client = new SpotifyCliClient({ cliPath: "/bin/spotify_cli" });
+
+    await expect(client.run(["search", "-x"])).rejects.toThrow(/unknown command "search -x"/);
+  });
+
   it("does not retry a non-transient error", async () => {
     const err = Object.assign(new Error("boom"), { code: 1 });
     execFileMock.mockImplementation((_path, _args, _options, cb) => cb(err, "", "invalid uri"));
@@ -226,6 +271,52 @@ describe("SpotifyCliClient.runBatch", () => {
     child.emit("close", 0);
 
     await expect(resultPromise).rejects.toBeInstanceOf(SpotifyCliError);
+  });
+
+  it("survives an EPIPE on stdin when the child exits before reading the manifest", async () => {
+    const child = createFakeChildProcess();
+    spawnMock.mockReturnValue(child);
+    const client = new SpotifyCliClient({ cliPath: "/bin/spotify_cli" });
+
+    const resultPromise = client.runBatch({ ops: [{ op: "library_add", uris: ["spotify:track:a"] }] });
+
+    // A manifest bigger than the pipe buffer keeps writing after a child that
+    // rejected it has already exited. Without an 'error' listener on stdin
+    // this emit is an uncaught exception that kills the whole server process;
+    // the batch must instead fail through the child's own exit code/stderr.
+    expect(() =>
+      child.stdin.emit("error", Object.assign(new Error("write EPIPE"), { code: "EPIPE" }))
+    ).not.toThrow();
+
+    child.stderr.emit("data", Buffer.from("invalid manifest"));
+    child.emit("close", 2);
+
+    await expect(resultPromise).rejects.toThrow(/invalid manifest/);
+  });
+
+  it("escalates to SIGKILL when a timed-out child ignores SIGTERM", async () => {
+    vi.useFakeTimers();
+    try {
+      const child = createFakeChildProcess();
+      spawnMock.mockReturnValue(child);
+      const client = new SpotifyCliClient({ cliPath: "/bin/spotify_cli" });
+
+      const resultPromise = client.runBatch({ ops: [] });
+      resultPromise.catch(() => {});
+
+      vi.advanceTimersByTime(60_000);
+      expect(child.kill).toHaveBeenCalledWith();
+
+      // 'close' never fires for a child that ignores SIGTERM, so without the
+      // escalation the call would hang forever instead of timing out.
+      vi.advanceTimersByTime(2_000);
+      expect(child.kill).toHaveBeenCalledWith("SIGKILL");
+
+      child.emit("close", null);
+      await expect(resultPromise).rejects.toThrow(/timed out after 60000ms/);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("maps ENOENT from spawn's error event to a clear 'not found' message", async () => {
