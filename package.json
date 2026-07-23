@@ -1,6 +1,6 @@
 {
   "name": "spotify-cli-mcp",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "MCP server wrapping the Spotify desktop app's bundled local CLI",
   "license": "MIT",
   "author": "mrvnklm",
