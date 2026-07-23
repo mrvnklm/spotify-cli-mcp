@@ -24,8 +24,9 @@ library, playlists, and playlist folders, all through natural language.
 
 Unlike most MCP servers, this one needs **no API keys, no OAuth, no
 credentials at all**. It shells out to `spotify_cli`, a CLI binary Spotify
-already bundles inside the desktop app (Spotify's own in-app AI features use
-this exact binary too). Authentication is implicit: whichever Spotify
+already bundles inside the desktop app -- it's there because it powers
+"Studio by Spotify Labs," a research-preview AI feature built into the
+Spotify desktop app itself. Authentication is implicit: whichever Spotify
 account is already logged into the desktop app on this machine is the
 account the tools operate on.
 
@@ -290,7 +291,7 @@ docs/
 
 | Environment Variable | Required | Default | Description |
 |---------------------|----------|---------|-------------|
-| `SPOTIFY_CLI_PATH` | No | `/Applications/Spotify.app/Contents/MacOS/spotify_cli` | Path to the `spotify_cli` binary. Same variable name Spotify's own in-app AI tool already uses. |
+| `SPOTIFY_CLI_PATH` | No | `/Applications/Spotify.app/Contents/MacOS/spotify_cli` | Path to the `spotify_cli` binary. Same variable name "Studio by Spotify Labs" itself already uses. |
 | `SPOTIFY_MCP_RETRY_MAX_ATTEMPTS` | No | `2` | Retry attempts for the one known transient CLI failure mode (occasional local IPC `HTTP request failed` errors). |
 | `SPOTIFY_MCP_RETRY_BASE_DELAY_MS` | No | `300` | Delay between retries (ms). |
 
