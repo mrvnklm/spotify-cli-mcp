@@ -40,9 +40,18 @@ That means:
   (`/Applications/Spotify.app/Contents/MacOS/spotify_cli`) is confirmed
   working; Windows/Linux equivalents are unconfirmed (see
   [Configuration](#configuration)).
+- **No app registration, OAuth scopes, or per-app API quotas to manage** --
+  there's no developer dashboard, no client id/secret, and nothing to
+  request higher rate limits for. That said, `spotify_cli` still talks to
+  Spotify's backend internally, so this isn't a claim that requests are
+  literally unthrottled -- occasional transient failures are handled with a
+  small automatic retry (see [Configuration](#configuration)).
 
 ## Features
 
+- **No API keys, OAuth, or app registration** -- runs against your own
+  already-logged-in Spotify desktop app, so there's no developer dashboard
+  to set up and no per-app rate-limit tier to request or manage.
 - **Playback control** -- play/pause/resume, skip, seek, shuffle, repeat,
   speed, volume, now-playing.
 - **Devices, queue, and Jam sessions** -- list/transfer/set volume on
@@ -286,6 +295,14 @@ docs/
   with a URI (e.g. `create_playlist`, `create_folder`) extract that URI from
   the message so it can be chained into a follow-up call without an extra
   lookup round-trip.
+- **No caching layer**, unlike a typical HTTP API wrapper. This is deliberate,
+  not a gap: most tools here either reflect live state that a cache would
+  make stale on the next read (now-playing, the queue, devices, Jam status),
+  or feed position-based mutations (`remove_tracks_from_playlist` explicitly
+  warns that positions shift after other edits). Caching would make it
+  easier for an agent to act on stale positions -- actively worse for safety,
+  not better -- and there's no rate-limit pressure here to trade that risk
+  against in the first place (see above).
 
 ## Configuration
 
